@@ -1,0 +1,345 @@
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/drilldown.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+<script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+
+var pos = {total:0, retweets:0, favorites:0, interactions:0, followers:0};
+var neu = {total:0, retweets:0, favorites:0, interactions:0, followers:0};
+var neg = {total:0, retweets:0, favorites:0, interactions:0, followers:0};
+
+function findOverallScore(sentiment, retweet, favorite, followers)
+{
+      if(sentiment === "positive")
+      {
+          pos.total++;
+          pos.retweets += retweet;
+          pos.favorites += favorite;
+          pos.followers += followers;
+      }
+      else if(sentiment === "neutral")
+      {
+          neu.total++;
+          neu.retweets += retweet;
+          neu.favorites += favorite;
+          neu.followers += followers;
+      }
+      else
+      {
+          neg.total++;
+          neg.retweets += retweet;
+          neg.favorites += favorite;
+          neg.followers += followers;
+      }
+
+    pos.interactions = pos.retweets + pos.favorites;
+    neu.interactions = neu.retweets + neu.favorites;
+    neg.interactions = neg.retweets + neg.favorites;
+
+};
+
+function getInfo(request, response)
+{
+$.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/results",
+        contentType:"application/json",
+        dataType: "json",
+        success: function (data) {
+           generateCharts(data)
+        }
+    });
+}
+
+function generateCharts(data){
+    for(var i = 0; i < Object.keys(data).length; i++)
+    {
+      var obj = data[i];
+      findOverallScore(obj.comp_score, obj.retweets, obj.favorites, obj.followers);
+    }
+
+    console.log(pos);
+    console.log(neu);
+    console.log(neg);
+
+    Highcharts.chart('chart1', {
+    chart: {
+    plotBackgroundColor: '#121212',
+    backgroundColor: '#121212',
+    plotBorderWidth: 0,
+    plotShadow: false,
+    width: 950
+      },
+      title: {
+        text: 'Peoples Feelings Breakdown.',
+        align: 'center',
+        verticalAlign: 'top',
+        style: {
+            color: '#dedede',
+            fontWeight: 'bold',
+            fontFamily:'Roboto Mono',
+            fontSize:'22px'
+        }
+
+       },
+      legend: {
+        enabled: false
+      },
+
+      xAxis: {
+        categories: ['Positive Tweets', 'Neutral Tweets', 'Negative Tweets'],
+         labels: {
+        style: {
+            color: '#dedede',
+            fontWeight: 'bold',
+            fontFamily:'Roboto Mono',
+            fontSize:'12px'
+        }
+        },
+      },
+
+      yAxis: {
+        title: {
+                text: 'Total number of followers',
+                 style: {
+                          color: '#dedede',
+                          fontWeight: 'bold',
+                          fontFamily:'Roboto Mono',
+                          fontSize:'12px'
+                          }
+                 },
+        tickInterval: 250000,
+        labels: {
+          formatter: function numberWithCommas()
+          {
+          return this.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          },
+          style: {
+                  color: '#dedede',
+                  fontWeight: 'bold',
+                  fontFamily:'Roboto Mono',
+                  fontSize:'12px'
+                  }
+          },
+        },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+      },
+      accessibility: {
+        point: {
+          valueSuffix: '%'
+        }
+      },
+      plotOptions: {
+
+      bar: {
+        colors: ['#15eda3','#87e0ff', '#ff6464'],
+         size: '80%'
+       },
+
+       pie: {
+        colors: ['#15eda3','#87e0ff', '#ff6464'],
+        dataLabels: {
+            enabled: true,
+            distance: -40,
+            style: {
+                  color: '#dedede',
+                  fontWeight: 'bold',
+                  fontFamily:'Roboto Mono',
+                  fontSize:'13px'
+                  },
+          },
+        startAngle: -90,
+        endAngle: 90,
+        center: ['50%', '75%'],
+        size: '140%'
+        }
+      },
+    series: [
+    {
+      type: 'pie',
+      name: 'Tweets',
+      colorByPoint: true,
+      innerSize: '60%',
+      data:
+      [
+        {name:"Positive", y:pos.total, drilldown:"followers"},
+        {name:"Neutral", y:neu.total, drilldown:"followers"},
+        {name:"Negative", y:neg.total, drilldown:"followers"}
+      ]
+    }
+  ],
+  drilldown: {
+
+    series: [
+      {
+       type: 'bar',
+       colorByPoint: true,
+       name:"Number of Followers",
+       id:"followers",
+
+       data:
+       [
+        {name:"Positive", y:pos.followers},
+        {name:"Neutral", y:neu.followers},
+        {name:"Negative", y:neg.followers}
+      ]
+      }
+    ]
+  }
+});
+
+Highcharts.chart('chart2', {
+    chart: {
+    plotBackgroundColor: '#121212',
+    backgroundColor: '#121212',
+    plotBorderWidth: 0,
+    plotShadow: false,
+    width: 850
+      },
+      title: {
+        text: 'Total number of interactions ( retweets + favourites )',
+        align: 'center',
+        verticalAlign: 'top',
+        style: {
+            color: '#dedede',
+            fontWeight: 'bold',
+            fontFamily:'Roboto Mono',
+            fontSize:'22px'
+        }
+
+       },
+      legend: {
+        enabled: false
+      },
+
+      xAxis: {
+        categories: ['Positive Tweets', 'Neutral Tweets', 'Negative Tweets'],
+        labels: {
+        style: {
+            color: '#dedede',
+            fontWeight: 'bold',
+            fontFamily:'Roboto Mono',
+            fontSize:'14px'
+
+        }
+        },
+
+      },
+
+      yAxis: {
+      tickInterval: 250,
+        title: {
+                text: ''
+              },
+        labels: {
+          formatter: function numberWithCommas()
+          {
+          return this.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          },
+          style: {
+            color: '#dedede',
+            fontWeight: 'bold',
+            fontFamily:'Roboto Mono',
+            fontSize:'16px'
+        }
+        },
+      },
+      tooltip: {
+          valueDecimals: 0,
+      },
+      accessibility: {
+        point: {
+          valueSuffix: '%'
+        }
+      },
+      plotOptions: {
+
+      bar: {
+        colors: ['#15eda3','#87e0ff', '#ff6464'],
+         size: '80%'
+       },
+      },
+    series: [
+    {
+      type: 'bar',
+      name: 'Tweets',
+      colorByPoint: true,
+      innerSize: '60%',
+      data:
+      [
+        {name:"Positive", y:pos.interactions},
+        {name:"Neutral", y:neu.interactions},
+        {name:"Negative", y:neg.interactions}
+      ]
+    }
+  ]
+});
+}
+
+ function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    function flashtext(ele) {
+         document.getElementById( ele ).style.color = grabColor();
+        }
+
+    setInterval(function() {
+         flashtext("colorChangerId");
+    }, 1200 );
+
+
+   function grabColor()
+   {
+        var color;
+        colors = ["#9C27B0","#29B6F6","#FFA726","#66BB6A","#EF5350","#FFEE58","#E0E0E0","#F48FB1"];
+        var choice = getRandomInt(9);
+        return colors[choice];
+   }
+
+$(document).ready(function()
+  {
+    getInfo();
+  });
+
+</script>
+<style>
+body{
+    background-color:#121212;
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 400;
+    color:white;
+}
+
+.container{
+         margin-left:10%;
+}
+
+.navThing{
+  margin-left:25px;
+  margin-top:25px;
+}
+
+a{
+  color:#dedede;
+}
+
+</style>
+<div class = "navThing">
+  <h1 id = 'colorChangerId'>Results !</h1>
+  <h1><a href="http://127.0.0.1:5000/">Home</a></h1>
+</div>
+<div class = "container">
+  <figure class="highcharts-figure">
+    <div id="chart1"></div>
+  </figure>
+  <br>
+  <figure class="highcharts-figure">
+    <div id="chart2"></div>
+  </figure>
+</div>

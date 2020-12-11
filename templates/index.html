@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HomePage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<script>
+ $(document).ready(function() {
+ });
+
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+    function flashtext(ele) {
+         document.getElementById( ele ).style.color = grabColor();
+        }
+
+    setInterval(function() {
+         flashtext("colorChangerId");
+    }, 1200 );
+
+
+   function grabColor()
+   {
+        var color;
+        colors = ["#9C27B0","#29B6F6","#FFA726","#66BB6A","#EF5350","#FFEE58","#E0E0E0","#F48FB1"];
+        var choice = getRandomInt(9);
+        return colors[choice];
+   }
+
+</script>
+<style>
+body{
+    background-color:#121212;
+    font-family: 'Roboto Mono';
+    font-style: normal;
+    font-weight: 400;
+    color:white;
+}
+
+.container {
+     margin-left:35%;
+     margin-top:15%;
+}
+
+.container_item {
+     margin-top:5%;
+}
+
+input {
+  background-color: #F0F3F4;
+  border-radius: 10px;
+  border: 0;
+  box-sizing: border-box;
+  color:#424242;
+  height: 37px;
+  width: 250px;
+  outline: 0;
+  padding-left: 15px;
+  font-family: 'Roboto Mono';
+}
+
+button {
+  background-color: #00acee;
+  border-radius: 10px;
+  border: 0;
+  box-sizing: border-box;
+  color: #eee;
+  cursor: pointer;
+  height: 35px;
+  text-align: center;
+  font-size:18px;
+  font-family: 'Roboto Mono';
+  width: 200px;
+  padding-bottom:2px;
+}
+</style>
+<body>
+    <div class="container">
+        <h1 id = 'colorChangerId'>Twitter Opinion Thingy !</h1>
+        <div class="container_item">
+            <form method="POST" class="form" action="/">
+                <input placeholder="Enter term here ..." name="query" type="text"/>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
